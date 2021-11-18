@@ -16,6 +16,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { NextPage } from 'next';
 import React, { useState } from 'react';
+
 const tweets: Twitter.Tweet[] = [
   {
     userName: 'hogehoge',
@@ -26,7 +27,7 @@ const tweets: Twitter.Tweet[] = [
   },
 ];
 
-const Timeline: NextPage = () => {
+const TimelinePage: NextPage = () => {
   const [open, setOpen] = useState(false);
   const [tweetContent, setTweetContent] = useState('');
 
@@ -61,7 +62,7 @@ const Timeline: NextPage = () => {
           </React.Fragment>
         ))}
       </List>
-      <Fab color="primary" onClick={handleClickFab} sx={{ position: 'absolute', right: 16, bottom: 16 }}>
+      <Fab color="primary" onClick={handleClickFab} sx={{ position: 'fixed', right: 16, bottom: 16 }}>
         <AddIcon />
       </Fab>
       <Dialog open={open} onClose={handleClose}>
@@ -79,4 +80,4 @@ const Timeline: NextPage = () => {
   );
 };
 
-export default Timeline;
+export default TimelinePage;
