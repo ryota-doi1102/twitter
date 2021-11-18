@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+    "wayou.vscode-todo-highlight",
+    "jpoissonnier.vscode-styled-components"
+  ]
+}

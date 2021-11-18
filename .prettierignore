@@ -1,0 +1,12 @@
+.git/
+.github/
+
+node_modules
+.gitignore
+
+tsconfig.json
+jsconfig.json
+package.json
+package-lock.json
+yarn.lock
+.next/
