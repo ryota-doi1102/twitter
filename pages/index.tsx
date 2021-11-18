@@ -1,8 +1,12 @@
+import { Button } from '@mui/material';
 import { NextPage } from 'next';
-import { HomeTemplate } from '../components/templates/home';
 
 const Home: NextPage = () => {
-  return <HomeTemplate />;
+  return (
+    <main>
+      <Button variant="contained">Login</Button>
+    </main>
+  );
 };
 
 export default Home;
