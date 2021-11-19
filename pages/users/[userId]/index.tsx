@@ -12,33 +12,46 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { NextPage } from 'next';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import useUser, { User } from 'hooks/useUser';
 import { useRouter } from 'next/router';
 import useAuth from 'hooks/useAuth';
+import AuthContext from 'contexts/authContext';
+import useFollow from 'hooks/useFollow';
 
 const UserPage: NextPage = () => {
   const router = useRouter();
   const { getUser } = useUser();
+  const { getIsFollow } = useFollow();
   const { logout } = useAuth();
+  const { loginUser } = useContext(AuthContext);
   const [user, setUser] = useState<User | undefined>();
   const [open, setOpen] = useState(false);
+  const [isFollow, setIsFollow] = useState(false);
+  const displayUserId = router.query.userId;
+
+  const requestGetIsFollow = useCallback(async () => {
+    if (loginUser && typeof displayUserId === 'string') {
+      const result = await getIsFollow(loginUser.id, displayUserId);
+      setIsFollow(result);
+    }
+  }, [displayUserId, getIsFollow, loginUser]);
 
   const requestGetUser = useCallback(async () => {
-    const userId = router.query.userId;
-    if (typeof userId === 'string') {
-      const user = await getUser(userId);
-      if (!user) {
+    if (typeof displayUserId === 'string') {
+      const displayUser = await getUser(displayUserId);
+      if (!displayUser) {
         router.push('/');
         return;
       }
-      setUser(user);
+      setUser(displayUser);
     }
-  }, [getUser, router]);
+  }, [displayUserId, getUser, router]);
 
   useEffect(() => {
     requestGetUser();
-  }, [requestGetUser]);
+    requestGetIsFollow();
+  }, [requestGetIsFollow, requestGetUser]);
 
   const handleClickChangeButton = () => {
     setOpen(true);
@@ -56,6 +69,8 @@ const UserPage: NextPage = () => {
   const handleClickLogoutButton = useCallback(async () => {
     await logout();
   }, [logout]);
+  // TODO: フォロー処理の実装
+  // TODO: フォロー解除処理の実装
 
   return (
     <main>
@@ -71,7 +86,11 @@ const UserPage: NextPage = () => {
             <Button variant="text" onClick={handleClickChangeButton}>
               変更
             </Button>
-            <Button variant="contained">フォローする</Button>
+            {loginUser && isFollow ? (
+              <Button variant="outlined">フォロー中</Button>
+            ) : (
+              <Button variant="contained">フォローする</Button>
+            )}
           </Box>
           <Stack
             direction="row"

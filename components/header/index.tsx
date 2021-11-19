@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import AuthContext from 'contexts/authContext';
 
 const Header: React.FC = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { loginUser: currentUser } = useContext(AuthContext);
 
   return (
     <>
