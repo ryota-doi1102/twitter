@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   Dialog,
   DialogActions,
@@ -11,11 +12,16 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { NextPage } from 'next';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import useUser from 'hooks/useUser';
 
 const UserPage: NextPage = () => {
+  const { name, avatarUrl, getUser } = useUser();
   const [open, setOpen] = useState(false);
-  const [userName, setUserName] = useState('名無しさん');
+
+  useEffect(() => {
+    getUser();
+  }, [getUser]);
 
   const handleClickChangeButton = () => {
     setOpen(true);
@@ -25,7 +31,6 @@ const UserPage: NextPage = () => {
   };
   const handleChangeUserName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const value = event.target.value;
-    setUserName(value);
   };
   const handleClickDecisionButton = () => {
     setOpen(false);
@@ -34,16 +39,17 @@ const UserPage: NextPage = () => {
   return (
     <main>
       <Stack direction="row">
+        <Avatar alt={name} src={avatarUrl} />
         <Typography variant="h4" component="h1">
-          {userName}
+          {name}
         </Typography>
-        <Box>
-          <Button variant="text" onClick={handleClickChangeButton}>
-            変更
-          </Button>
-          <Button variant="contained">フォローする</Button>
-        </Box>
       </Stack>
+      <Box>
+        <Button variant="text" onClick={handleClickChangeButton}>
+          変更
+        </Button>
+        <Button variant="contained">フォローする</Button>
+      </Box>
       <Stack direction="row" justifyContent="center" divider={<Divider orientation="vertical" flexItem />} spacing={2}>
         <Button variant="text">フォロー</Button>
         <Button variant="text">フォロワー</Button>
@@ -52,7 +58,7 @@ const UserPage: NextPage = () => {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>新しい名前</DialogTitle>
         <DialogContent>
-          <TextField value={userName} onChange={handleChangeUserName} />
+          <TextField value={name} onChange={handleChangeUserName} />
         </DialogContent>
         <DialogActions>
           <Button variant="text" onClick={handleClickDecisionButton}>
