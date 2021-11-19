@@ -1,7 +1,11 @@
 import { AppBar, Toolbar, Typography, Avatar } from '@mui/material';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import { useContext } from 'react';
+import AuthContext from 'contexts/authContext';
 
 const Header: React.FC = () => {
+  const { currentUser } = useContext(AuthContext);
+
   return (
     <>
       <AppBar>
@@ -10,7 +14,7 @@ const Header: React.FC = () => {
             <TwitterIcon />
             Twitter
           </Typography>
-          <Avatar alt="ログインしているユーザー" src="/vercel.svg" />
+          {currentUser && <Avatar alt={currentUser.name} src={currentUser.avatarUrl} />}
         </Toolbar>
       </AppBar>
       <Toolbar />
