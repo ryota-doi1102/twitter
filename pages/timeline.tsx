@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Divider,
   Fab,
+  Link,
   List,
   ListItem,
   ListItemAvatar,
@@ -21,6 +22,7 @@ import AuthContext from 'contexts/authContext';
 import useFollow from 'hooks/useFollow';
 import useUser from 'hooks/useUser';
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
 
 const TimelinePage: NextPage = () => {
   const router = useRouter();
@@ -94,13 +96,22 @@ const TimelinePage: NextPage = () => {
   return (
     <main>
       <List>
-        {tweetList.map((tweet, index) => (
-          <React.Fragment key={index}>
+        {tweetList.map((tweet) => (
+          <React.Fragment key={tweet.id}>
             <ListItem>
               <ListItemAvatar>
                 <Avatar alt={tweet.userName} src={tweet.avatarUrl} />
               </ListItemAvatar>
-              <ListItemText primary={tweet.content} secondary={tweet.userName} />
+              <ListItemText
+                primary={tweet.content}
+                secondary={
+                  <NextLink href={`/users/${tweet.userId}`} passHref>
+                    <Link underline="none" color="inherit">
+                      {tweet.userName}
+                    </Link>
+                  </NextLink>
+                }
+              />
             </ListItem>
             <Divider />
           </React.Fragment>
