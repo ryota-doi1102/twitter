@@ -56,12 +56,15 @@ const UserPage: NextPage = () => {
   const handleClickChangeButton = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleChangeUserName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const value = event.target.value;
   };
+
   const handleClickDecisionButton = () => {
     setOpen(false);
   };
@@ -69,12 +72,8 @@ const UserPage: NextPage = () => {
   const handleClickLogoutButton = useCallback(async () => {
     await logout();
   }, [logout]);
-  // TODO: フォロー処理の実装
-  // TODO: フォロー解除処理の実装
+
   const handleClickFollowButton = useCallback(async () => {
-    // followsコレクションにドキュメントを追加
-    // followUserID:ログインしているユーザー
-    // followedUserID:表示しているユーザー
     if (loginUser && typeof displayUserId === 'string' && !isFollow) {
       await addFollow({
         followUserId: loginUser.id,
@@ -83,6 +82,7 @@ const UserPage: NextPage = () => {
       setIsFollow(true);
     }
   }, [loginUser, displayUserId, isFollow, addFollow]);
+
   const handleClickFollowingButton = useCallback(async () => {
     if (loginUser && typeof displayUserId === 'string' && isFollow) {
       await deleteFollow(loginUser.id, displayUserId);

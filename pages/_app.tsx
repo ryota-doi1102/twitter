@@ -5,8 +5,6 @@ import type { AppProps } from 'next/app';
 const App = ({ Component, pageProps }: AppProps): JSX.Element => {
   const authContextProvider = AuthContextProvider();
 
-  console.log(authContextProvider.loginUser?.id);
-
   return (
     <AuthContext.Provider value={authContextProvider}>
       <Header />
