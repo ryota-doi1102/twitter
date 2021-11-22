@@ -15,7 +15,9 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { NextPage } from 'next';
-import React, { useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
+import useTweet from 'hooks/useTweet';
+import AuthContext from 'contexts/authContext';
 
 const tweets: Twitter.Tweet[] = [
   {
@@ -29,6 +31,8 @@ const tweets: Twitter.Tweet[] = [
 
 const TimelinePage: NextPage = () => {
   const [open, setOpen] = useState(false);
+  const { addTweet } = useTweet();
+  const { loginUser } = useContext(AuthContext);
   const [tweetContent, setTweetContent] = useState('');
 
   const handleClickFab = () => {
@@ -42,10 +46,16 @@ const TimelinePage: NextPage = () => {
     const value = event.target.value;
     setTweetContent(value);
   };
-  const handleClickTweetButton = () => {
-    setOpen(false);
-    setTweetContent('');
-  };
+  const handleClickTweetButton = useCallback(async () => {
+    if (loginUser && tweetContent !== '') {
+      await addTweet({
+        userId: loginUser.id,
+        content: tweetContent,
+      });
+      setOpen(false);
+      setTweetContent('');
+    }
+  }, [addTweet, loginUser, tweetContent]);
 
   return (
     <main>
@@ -71,7 +81,7 @@ const TimelinePage: NextPage = () => {
           <TextField multiline rows={4} value={tweetContent} onChange={handleChangeTweetContent} />
         </DialogContent>
         <DialogActions>
-          <Button variant="text" onClick={handleClickTweetButton}>
+          <Button variant="text" disabled={tweetContent === ''} onClick={handleClickTweetButton}>
             ツイートする
           </Button>
         </DialogActions>
