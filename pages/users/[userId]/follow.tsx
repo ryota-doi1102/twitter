@@ -14,6 +14,7 @@ import React from 'react';
 
 const tweets: Twitter.Tweet[] = [
   {
+    id: '',
     userName: 'hogehoge',
     avatarUrl: '/vercel.svg',
     userId: 'gehogeho',
