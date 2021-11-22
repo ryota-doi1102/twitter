@@ -1,5 +1,5 @@
 import { getUnixTime } from 'date-fns';
-import { collection, FirestoreDataConverter, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, FirestoreDataConverter, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { useCallback } from 'react';
 import { db } from 'utils/firebase';
 
@@ -35,8 +35,28 @@ const useFollow = () => {
     const querySnap = await getDocs(q);
     return querySnap.size > 0;
   }, []);
+  const addFollow = useCallback(async (followData: Partial<Follow>) => {
+    const followCollection = collection(db, 'follows').withConverter(followConverter);
+    await addDoc(followCollection, followData);
+  }, []);
+  const deleteFollow = useCallback(async (followUserId: string, followerUserId: string) => {
+    const followCollection = collection(db, 'follows').withConverter(followConverter);
+    const q = query(
+      followCollection,
+      where('followUserId', '==', followUserId),
+      where('followerUserId', '==', followerUserId),
+    );
+    const querySnap = await getDocs(q);
+    const batch = writeBatch(db);
+    querySnap.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }, []);
   return {
     getIsFollow,
+    addFollow,
+    deleteFollow,
   };
 };
 export default useFollow;

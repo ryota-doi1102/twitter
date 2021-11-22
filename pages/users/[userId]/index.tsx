@@ -22,7 +22,7 @@ import useFollow from 'hooks/useFollow';
 const UserPage: NextPage = () => {
   const router = useRouter();
   const { getUser } = useUser();
-  const { getIsFollow } = useFollow();
+  const { getIsFollow, addFollow, deleteFollow } = useFollow();
   const { logout } = useAuth();
   const { loginUser } = useContext(AuthContext);
   const [user, setUser] = useState<User | undefined>();
@@ -71,6 +71,24 @@ const UserPage: NextPage = () => {
   }, [logout]);
   // TODO: フォロー処理の実装
   // TODO: フォロー解除処理の実装
+  const handleClickFollowButton = useCallback(async () => {
+    // followsコレクションにドキュメントを追加
+    // followUserID:ログインしているユーザー
+    // followedUserID:表示しているユーザー
+    if (loginUser && typeof displayUserId === 'string' && !isFollow) {
+      await addFollow({
+        followUserId: loginUser.id,
+        followerUserId: displayUserId,
+      });
+      setIsFollow(true);
+    }
+  }, [loginUser, displayUserId, isFollow, addFollow]);
+  const handleClickFollowingButton = useCallback(async () => {
+    if (loginUser && typeof displayUserId === 'string' && isFollow) {
+      await deleteFollow(loginUser.id, displayUserId);
+      setIsFollow(false);
+    }
+  }, [deleteFollow, displayUserId, isFollow, loginUser]);
 
   return (
     <main>
@@ -87,9 +105,13 @@ const UserPage: NextPage = () => {
               変更
             </Button>
             {loginUser && isFollow ? (
-              <Button variant="outlined">フォロー中</Button>
+              <Button variant="outlined" onClick={handleClickFollowingButton}>
+                フォロー中
+              </Button>
             ) : (
-              <Button variant="contained">フォローする</Button>
+              <Button variant="contained" onClick={handleClickFollowButton}>
+                フォローする
+              </Button>
             )}
           </Box>
           <Stack
