@@ -22,7 +22,7 @@ import AuthContext from 'contexts/authContext';
 import useFollow from 'hooks/useFollow';
 import useUser from 'hooks/useUser';
 import { useRouter } from 'next/router';
-import NextLink from 'next/Link';
+import NextLink from 'next/link';
 
 const TimelinePage: NextPage = () => {
   const router = useRouter();
