@@ -4,7 +4,7 @@ import { createContext, useEffect, useState } from 'react';
 import { auth } from 'utils/firebase';
 
 type AuthContextType = {
-  currentUser?: User;
+  loginUser?: User;
 };
 
 const AuthContext = createContext<AuthContextType>({});
@@ -37,7 +37,7 @@ export const AuthContextProvider = (): AuthContextType => {
   }, [addUser, getUser, router]);
 
   return {
-    currentUser,
+    loginUser: currentUser,
   };
 };
 
