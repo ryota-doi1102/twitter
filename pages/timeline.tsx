@@ -20,8 +20,10 @@ import useTweet from 'hooks/useTweet';
 import AuthContext from 'contexts/authContext';
 import useFollow from 'hooks/useFollow';
 import useUser from 'hooks/useUser';
+import { useRouter } from 'next/router';
 
 const TimelinePage: NextPage = () => {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const { addTweet, getUsersTweetList } = useTweet();
   const { getFollowList } = useFollow();
@@ -34,7 +36,7 @@ const TimelinePage: NextPage = () => {
     if (loginUser) {
       const followList = await getFollowList(loginUser.id);
       const followUserIdList = followList.map((follow) => {
-        return follow.followUserId;
+        return follow.followerUserId;
       });
       followUserIdList.push(loginUser.id);
       const usersTweetList = await getUsersTweetList(followUserIdList);
@@ -85,8 +87,9 @@ const TimelinePage: NextPage = () => {
       });
       setOpen(false);
       setTweetContent('');
+      router.reload();
     }
-  }, [addTweet, loginUser, tweetContent]);
+  }, [addTweet, loginUser, router, tweetContent]);
 
   return (
     <main>
