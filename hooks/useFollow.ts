@@ -35,10 +35,12 @@ const useFollow = () => {
     const querySnap = await getDocs(q);
     return querySnap.size > 0;
   }, []);
+
   const addFollow = useCallback(async (followData: Partial<Follow>) => {
     const followCollection = collection(db, 'follows').withConverter(followConverter);
     await addDoc(followCollection, followData);
   }, []);
+
   const deleteFollow = useCallback(async (followUserId: string, followerUserId: string) => {
     const followCollection = collection(db, 'follows').withConverter(followConverter);
     const q = query(
@@ -53,10 +55,23 @@ const useFollow = () => {
     });
     await batch.commit();
   }, []);
+
+  const getFollowList = useCallback(async (followUserId: string) => {
+    const followCollection = collection(db, 'follows').withConverter(followConverter);
+    const q = query(followCollection, where('followUserId', '==', followUserId));
+    const querySnap = await getDocs(q);
+    const followList: Follow[] = querySnap.docs.map((doc) => {
+      return doc.data();
+    });
+    return followList;
+  }, []);
+
   return {
     getIsFollow,
     addFollow,
     deleteFollow,
+    getFollowList,
   };
 };
+
 export default useFollow;

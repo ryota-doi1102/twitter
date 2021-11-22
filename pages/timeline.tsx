@@ -15,37 +15,68 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { NextPage } from 'next';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useTweet from 'hooks/useTweet';
 import AuthContext from 'contexts/authContext';
-
-const tweets: Twitter.Tweet[] = [
-  {
-    userName: 'hogehoge',
-    avatarUrl: '/vercel.svg',
-    userId: 'gehogeho',
-    content: 'こんにちは',
-    createdAt: 1687645,
-  },
-];
+import useFollow from 'hooks/useFollow';
+import useUser from 'hooks/useUser';
 
 const TimelinePage: NextPage = () => {
   const [open, setOpen] = useState(false);
-  const { addTweet } = useTweet();
+  const { addTweet, getUsersTweetList } = useTweet();
+  const { getFollowList } = useFollow();
+  const { getUser } = useUser();
   const { loginUser } = useContext(AuthContext);
   const [tweetContent, setTweetContent] = useState('');
+  const [tweetList, setTweetList] = useState<Twitter.Tweet[]>([]);
+
+  const requestGetTimelineTweet = useCallback(async () => {
+    if (loginUser) {
+      const followList = await getFollowList(loginUser.id);
+      const followUserIdList = followList.map((follow) => {
+        return follow.followUserId;
+      });
+      followUserIdList.push(loginUser.id);
+      const usersTweetList = await getUsersTweetList(followUserIdList);
+      const filteredTweetList: Twitter.Tweet[] = [];
+      await Promise.all(
+        usersTweetList.map(async (usersTweet) => {
+          const user = await getUser(usersTweet.userId);
+          if (user) {
+            const tweet: Twitter.Tweet = {
+              id: usersTweet.id,
+              userId: usersTweet.userId,
+              userName: user?.name,
+              avatarUrl: user?.avatarUrl,
+              content: usersTweet.content,
+              createdAt: usersTweet.createdAt,
+            };
+            filteredTweetList.push(tweet);
+          }
+        }),
+      );
+      setTweetList(filteredTweetList);
+    }
+  }, [getFollowList, getUser, getUsersTweetList, loginUser]);
+
+  useEffect(() => {
+    requestGetTimelineTweet();
+  }, [requestGetTimelineTweet]);
 
   const handleClickFab = () => {
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
     setTweetContent('');
   };
+
   const handleChangeTweetContent: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const value = event.target.value;
     setTweetContent(value);
   };
+
   const handleClickTweetButton = useCallback(async () => {
     if (loginUser && tweetContent !== '') {
       await addTweet({
@@ -60,7 +91,7 @@ const TimelinePage: NextPage = () => {
   return (
     <main>
       <List>
-        {tweets.map((tweet, index) => (
+        {tweetList.map((tweet, index) => (
           <React.Fragment key={index}>
             <ListItem>
               <ListItemAvatar>

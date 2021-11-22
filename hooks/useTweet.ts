@@ -1,5 +1,5 @@
 import getUnixTime from 'date-fns/getUnixTime';
-import { addDoc, collection, FirestoreDataConverter } from 'firebase/firestore';
+import { addDoc, collection, FirestoreDataConverter, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { useCallback } from 'react';
 import { db } from 'utils/firebase';
 
@@ -29,8 +29,20 @@ const useTweet = () => {
     const tweetCollection = collection(db, 'tweets').withConverter(tweetConverter);
     await addDoc(tweetCollection, tweetData);
   }, []);
+
+  const getUsersTweetList = useCallback(async (userIdList: string[]): Promise<Tweet[]> => {
+    const tweetCollection = collection(db, 'tweets').withConverter(tweetConverter);
+    const q = query(tweetCollection, where('userId', 'in', userIdList), orderBy('createdAt', 'desc'));
+    const querySnap = await getDocs(q);
+    const usersTweetList: Tweet[] = querySnap.docs.map((doc) => {
+      return doc.data();
+    });
+    return usersTweetList;
+  }, []);
+
   return {
     addTweet,
+    getUsersTweetList,
   };
 };
 export default useTweet;
