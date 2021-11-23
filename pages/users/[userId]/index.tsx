@@ -13,65 +13,66 @@ import {
 import { Box } from '@mui/system';
 import { NextPage } from 'next';
 import { useCallback, useContext, useEffect, useState } from 'react';
-import useUser, { User } from 'hooks/useUser';
 import { useRouter } from 'next/router';
-import useAuth from 'hooks/useAuth';
 import AuthContext from 'contexts/authContext';
-import useFollow from 'hooks/useFollow';
+import { signOut } from 'firebase/auth';
+import { auth } from 'utils/firebase';
+import { getUser, User } from 'utils/firebase/firestore/user';
+import { getIsFollow, addFollow, deleteFollow } from 'utils/firebase/firestore/follow';
 
 const UserPage: NextPage = () => {
   const router = useRouter();
-  const { getUser } = useUser();
-  const { getIsFollow, addFollow, deleteFollow } = useFollow();
-  const { logout } = useAuth();
   const { loginUser } = useContext(AuthContext);
   const [user, setUser] = useState<User | undefined>();
   const [open, setOpen] = useState(false);
   const [isFollow, setIsFollow] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+
   const displayUserId = router.query.userId;
 
   const requestGetIsFollow = useCallback(async () => {
-    if (loginUser && typeof displayUserId === 'string') {
-      const result = await getIsFollow(loginUser.id, displayUserId);
-      setIsFollow(result);
-    }
-  }, [displayUserId, getIsFollow, loginUser]);
+    if (!loginUser || typeof displayUserId !== 'string') return;
+    const result = await getIsFollow(loginUser.id, displayUserId);
+    setIsFollow(result);
+  }, [displayUserId, loginUser]);
 
   const requestGetUser = useCallback(async () => {
-    if (typeof displayUserId === 'string') {
-      const displayUser = await getUser(displayUserId);
-      if (!displayUser) {
-        router.push('/');
-        return;
-      }
+    if (typeof displayUserId !== 'string') return;
+    const displayUser = await getUser(displayUserId);
+    if (displayUser) {
       setUser(displayUser);
+    } else {
+      router.push('/');
     }
-  }, [displayUserId, getUser, router]);
+  }, [displayUserId, router]);
 
   useEffect(() => {
     requestGetUser();
     requestGetIsFollow();
   }, [requestGetIsFollow, requestGetUser]);
 
-  const handleClickChangeButton = () => {
+  const handleClickChangeUserNameButton = useCallback(() => {
+    setNewUserName(user?.name || '');
     setOpen(true);
-  };
+  }, [user?.name]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
-  const handleChangeUserName: React.ChangeEventHandler<HTMLInputElement> = (event) => {
+  const handleChangeUserName: React.ChangeEventHandler<HTMLInputElement> = useCallback((event) => {
     const value = event.target.value;
-  };
+    setNewUserName(value);
+  }, []);
 
-  const handleClickDecisionButton = () => {
+  const handleClickDecisionButton = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
   const handleClickLogoutButton = useCallback(async () => {
-    await logout();
-  }, [logout]);
+    await signOut(auth);
+    router.push('/');
+  }, [router]);
 
   const handleClickFollowButton = useCallback(async () => {
     if (loginUser && typeof displayUserId === 'string' && !isFollow) {
@@ -81,14 +82,14 @@ const UserPage: NextPage = () => {
       });
       setIsFollow(true);
     }
-  }, [loginUser, displayUserId, isFollow, addFollow]);
+  }, [loginUser, displayUserId, isFollow]);
 
   const handleClickFollowingButton = useCallback(async () => {
     if (loginUser && typeof displayUserId === 'string' && isFollow) {
       await deleteFollow(loginUser.id, displayUserId);
       setIsFollow(false);
     }
-  }, [deleteFollow, displayUserId, isFollow, loginUser]);
+  }, [displayUserId, isFollow, loginUser]);
 
   return (
     <main>
@@ -101,7 +102,7 @@ const UserPage: NextPage = () => {
             </Typography>
           </Stack>
           <Box>
-            <Button variant="text" onClick={handleClickChangeButton}>
+            <Button variant="text" onClick={handleClickChangeUserNameButton}>
               変更
             </Button>
             {loginUser && isFollow ? (
@@ -129,7 +130,7 @@ const UserPage: NextPage = () => {
           <Dialog open={open} onClose={handleClose}>
             <DialogTitle>新しい名前</DialogTitle>
             <DialogContent>
-              <TextField value={user.name} onChange={handleChangeUserName} />
+              <TextField value={newUserName} onChange={handleChangeUserName} />
             </DialogContent>
             <DialogActions>
               <Button variant="text" onClick={handleClickDecisionButton}>
