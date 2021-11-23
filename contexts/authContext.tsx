@@ -1,7 +1,7 @@
-import useUser, { User } from 'hooks/useUser';
 import { useRouter } from 'next/router';
 import { createContext, useEffect, useState } from 'react';
 import { auth } from 'utils/firebase';
+import { addUser, getUser, User } from 'utils/firebase/firestore/user';
 
 type AuthContextType = {
   loginUser?: User;
@@ -12,7 +12,6 @@ const AuthContext = createContext<AuthContextType>({});
 export const AuthContextProvider = (): AuthContextType => {
   const [currentUser, setCurrentUser] = useState<User | undefined>();
   const router = useRouter();
-  const { getUser, addUser } = useUser();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -34,7 +33,7 @@ export const AuthContextProvider = (): AuthContextType => {
       }
     });
     return unsubscribe;
-  }, [addUser, getUser, router]);
+  }, [router]);
 
   return {
     loginUser: currentUser,
