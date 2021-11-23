@@ -63,3 +63,13 @@ export const getFollowList = async (followUserId: string) => {
   });
   return followList;
 };
+
+export const getFollowerList = async (followerUserId: string) => {
+  const followCollection = collection(db, 'follows').withConverter(followConverter);
+  const q = query(followCollection, where('followerUserId', '==', followerUserId));
+  const querySnap = await getDocs(q);
+  const followerList: Follow[] = querySnap.docs.map((doc) => {
+    return doc.data();
+  });
+  return followerList;
+};
