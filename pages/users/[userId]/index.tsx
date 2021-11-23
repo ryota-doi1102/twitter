@@ -17,7 +17,7 @@ import { useRouter } from 'next/router';
 import AuthContext from 'contexts/authContext';
 import { signOut } from 'firebase/auth';
 import { auth } from 'utils/firebase';
-import { getUser, User } from 'utils/firebase/firestore/user';
+import { getUser, updateUser, User } from 'utils/firebase/firestore/user';
 import { getIsFollow, addFollow, deleteFollow } from 'utils/firebase/firestore/follow';
 
 const UserPage: NextPage = () => {
@@ -65,9 +65,14 @@ const UserPage: NextPage = () => {
     setNewUserName(value);
   }, []);
 
-  const handleClickDecisionButton = useCallback(() => {
-    setOpen(false);
-  }, []);
+  const handleClickSubmitButton = useCallback(async () => {
+    if (loginUser && newUserName !== '') {
+      await updateUser(loginUser.id, {
+        name: newUserName,
+      });
+      router.reload();
+    }
+  }, [loginUser, newUserName, router]);
 
   const handleClickLogoutButton = useCallback(async () => {
     await signOut(auth);
@@ -102,17 +107,23 @@ const UserPage: NextPage = () => {
             </Typography>
           </Stack>
           <Box>
-            <Button variant="text" onClick={handleClickChangeUserNameButton}>
-              変更
-            </Button>
-            {loginUser && isFollow ? (
-              <Button variant="outlined" onClick={handleClickFollowingButton}>
-                フォロー中
+            {loginUser?.id === displayUserId && (
+              <Button variant="text" onClick={handleClickChangeUserNameButton}>
+                変更
               </Button>
+            )}
+            {loginUser && loginUser?.id !== displayUserId ? (
+              isFollow ? (
+                <Button variant="outlined" onClick={handleClickFollowingButton}>
+                  フォロー中
+                </Button>
+              ) : (
+                <Button variant="contained" onClick={handleClickFollowButton}>
+                  フォローする
+                </Button>
+              )
             ) : (
-              <Button variant="contained" onClick={handleClickFollowButton}>
-                フォローする
-              </Button>
+              <></>
             )}
           </Box>
           <Stack
@@ -124,16 +135,18 @@ const UserPage: NextPage = () => {
             <Button variant="text">フォロー</Button>
             <Button variant="text">フォロワー</Button>
           </Stack>
-          <Button variant="outlined" onClick={handleClickLogoutButton}>
-            ログアウト
-          </Button>
+          {loginUser?.id === displayUserId && (
+            <Button variant="outlined" onClick={handleClickLogoutButton}>
+              ログアウト
+            </Button>
+          )}
           <Dialog open={open} onClose={handleClose}>
             <DialogTitle>新しい名前</DialogTitle>
             <DialogContent>
               <TextField value={newUserName} onChange={handleChangeUserName} />
             </DialogContent>
             <DialogActions>
-              <Button variant="text" onClick={handleClickDecisionButton}>
+              <Button variant="text" onClick={handleClickSubmitButton}>
                 決定する
               </Button>
             </DialogActions>

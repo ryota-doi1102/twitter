@@ -1,5 +1,5 @@
 import { getUnixTime } from 'date-fns';
-import { setDoc, doc, FirestoreDataConverter, getDoc, collection } from 'firebase/firestore';
+import { setDoc, doc, FirestoreDataConverter, getDoc, collection, updateDoc } from 'firebase/firestore';
 import { db } from 'utils/firebase';
 
 export type User = {
@@ -34,4 +34,10 @@ export const addUser = async (userId: string, userData: Partial<User>) => {
   const usersCollection = collection(db, 'users').withConverter(userConverter);
   const docRef = doc(usersCollection, userId);
   await setDoc(docRef, userData);
+};
+
+export const updateUser = async (userId: string, userData: Partial<User>) => {
+  const usersCollection = collection(db, 'users').withConverter(userConverter);
+  const usersDocumentRef = doc(usersCollection, userId);
+  await updateDoc(usersDocumentRef, userData);
 };
