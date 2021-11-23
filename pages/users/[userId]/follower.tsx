@@ -1,40 +1,27 @@
-import {
-  Avatar,
-  Button,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
-} from '@mui/material';
+import UserList from 'components/userList';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { getFollowerList, getIsFollow } from 'utils/firebase/firestore/follow';
-import { getUser } from 'utils/firebase/firestore/user';
+import { getFollowerList } from 'utils/firebase/firestore/follow';
+import { getUser, User } from 'utils/firebase/firestore/user';
 
 const FollowerListPage: NextPage = () => {
-  const [followerUsers, setFollowerUsers] = useState<Twitter.FollowListItem[]>([]);
+  const [followerUsers, setFollowerUsers] = useState<User[]>([]);
   const router = useRouter();
 
   const requestGetFollowerList = useCallback(async () => {
     const displayUserId = router.query.userId;
     if (typeof displayUserId === 'string') {
       const followerList = await getFollowerList(displayUserId);
-      const newFollowerUsers: Twitter.FollowListItem[] = [];
+      const newFollowerUsers: User[] = [];
       const promise = followerList.map(async (follower) => {
         const user = await getUser(follower.followUserId);
         if (user) {
-          const isFollow = await getIsFollow(user.id, displayUserId);
-          const followerUser: Twitter.FollowListItem = {
+          const followerUser: User = {
             id: follower.id,
-            userId: user.id,
-            userName: user.name,
+            name: user.name,
             avatarUrl: user.avatarUrl,
             createdAt: follower.createdAt,
-            isFollow: isFollow,
           };
           newFollowerUsers.push(followerUser);
         }
@@ -48,33 +35,7 @@ const FollowerListPage: NextPage = () => {
     requestGetFollowerList();
   }, [requestGetFollowerList]);
 
-  return (
-    <main>
-      <List subheader={<ListSubheader>フォローリスト</ListSubheader>}>
-        {followerUsers.map((followerUser) => (
-          <React.Fragment key={followerUser.id}>
-            <ListItem
-              secondaryAction={
-                followerUser.isFollow ? (
-                  <Button variant="outlined">フォロー中</Button>
-                ) : (
-                  <Button variant="contained">フォローする</Button>
-                )
-              }
-            >
-              <ListItemButton>
-                <ListItemAvatar>
-                  <Avatar alt={followerUser.userName} src={followerUser.avatarUrl} />
-                </ListItemAvatar>
-                <ListItemText primary={followerUser.userName} />
-              </ListItemButton>
-            </ListItem>
-            <Divider />
-          </React.Fragment>
-        ))}
-      </List>
-    </main>
-  );
+  return <UserList listHeader="フォロワーリスト" users={followerUsers} />;
 };
 
 export default FollowerListPage;

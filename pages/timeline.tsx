@@ -12,6 +12,7 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  ListSubheader,
   TextField,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -85,8 +86,9 @@ const TimelinePage: NextPage = () => {
   }, [loginUser, router, tweetContent]);
 
   return (
-    <main>
-      <List>
+    <>
+      <List subheader={<ListSubheader>タイムライン</ListSubheader>}>
+        <Divider />
         {tweetList.map((tweet) => (
           <React.Fragment key={tweet.id}>
             <ListItem>
@@ -122,7 +124,7 @@ const TimelinePage: NextPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </main>
+    </>
   );
 };
 

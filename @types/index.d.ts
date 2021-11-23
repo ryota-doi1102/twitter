@@ -7,13 +7,4 @@ declare namespace Twitter {
     content: string;
     createdAt: number;
   };
-
-  type FollowListItem = {
-    id: string;
-    userId: string;
-    userName: string;
-    avatarUrl: string;
-    createdAt: number;
-    isFollow: boolean;
-  };
 }

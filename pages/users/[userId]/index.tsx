@@ -97,7 +97,7 @@ const UserPage: NextPage = () => {
   }, [displayUserId, isFollow, loginUser]);
 
   return (
-    <main>
+    <>
       {user && (
         <>
           <Stack direction="row">
@@ -153,7 +153,7 @@ const UserPage: NextPage = () => {
           </Dialog>
         </>
       )}
-    </main>
+    </>
   );
 };
 
