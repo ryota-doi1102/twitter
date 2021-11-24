@@ -15,11 +15,9 @@ const Home: NextPage = () => {
   }, [router]);
 
   return (
-    <main>
-      <Button variant="contained" onClick={handleClickLoginButton}>
-        Login
-      </Button>
-    </main>
+    <Button variant="contained" onClick={handleClickLoginButton}>
+      Login
+    </Button>
   );
 };
 

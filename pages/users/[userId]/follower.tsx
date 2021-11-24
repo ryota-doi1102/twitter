@@ -1,59 +1,41 @@
-import {
-  Avatar,
-  Button,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  Typography,
-} from '@mui/material';
+import UserList from 'components/userList';
 import { NextPage } from 'next';
-import React from 'react';
-
-const tweets: Twitter.Tweet[] = [
-  {
-    id: '',
-    userName: 'hogehoge',
-    avatarUrl: '/vercel.svg',
-    userId: 'gehogeho',
-    content: 'こんにちは',
-    createdAt: 1687645,
-  },
-];
+import { useRouter } from 'next/router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { getFollowerList } from 'utils/firebase/firestore/follow';
+import { getUser, User } from 'utils/firebase/firestore/user';
 
 const FollowerListPage: NextPage = () => {
-  return (
-    <main>
-      <Typography variant="h5" component="h1">
-        フォロワーリスト
-      </Typography>
-      <List>
-        {tweets.map((tweet, index) => (
-          <React.Fragment key={index}>
-            <ListItem
-              secondaryAction={
-                index % 2 === 0 ? (
-                  <Button variant="outlined">フォロー中</Button>
-                ) : (
-                  <Button variant="contained">フォローする</Button>
-                )
-              }
-            >
-              <ListItemButton>
-                <ListItemAvatar>
-                  <Avatar alt={tweet.userName} src={tweet.avatarUrl} />
-                </ListItemAvatar>
-                <ListItemText primary={tweet.userName} />
-              </ListItemButton>
-            </ListItem>
-            <Divider />
-          </React.Fragment>
-        ))}
-      </List>
-    </main>
-  );
+  const [followerUsers, setFollowerUsers] = useState<User[]>([]);
+  const router = useRouter();
+
+  const requestGetFollowerList = useCallback(async () => {
+    const displayUserId = router.query.userId;
+    if (typeof displayUserId === 'string') {
+      const followerList = await getFollowerList(displayUserId);
+      const newFollowerUsers: User[] = [];
+      const promise = followerList.map(async (follower) => {
+        const user = await getUser(follower.followUserId);
+        if (user) {
+          const followerUser: User = {
+            id: follower.id,
+            name: user.name,
+            avatarUrl: user.avatarUrl,
+            createdAt: follower.createdAt,
+          };
+          newFollowerUsers.push(followerUser);
+        }
+      });
+      await Promise.all(promise);
+      setFollowerUsers(newFollowerUsers);
+    }
+  }, [router.query.userId]);
+
+  useEffect(() => {
+    requestGetFollowerList();
+  }, [requestGetFollowerList]);
+
+  return <UserList listHeader="フォロワーリスト" users={followerUsers} />;
 };
 
 export default FollowerListPage;
