@@ -1,24 +1,15 @@
-import {
-  Avatar,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { Box } from '@mui/system';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { NextPage } from 'next';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import AuthContext from 'contexts/authContext';
 import { signOut } from 'firebase/auth';
 import { auth } from 'utils/firebase';
 import { getUser, updateUser, User } from 'utils/firebase/firestore/user';
-import { getIsFollow, addFollow, deleteFollow } from 'utils/firebase/firestore/follow';
+import { getIsFollow } from 'utils/firebase/firestore/follow';
+import { getUsersTweetList } from 'utils/firebase/firestore/tweet';
+import TweetList from 'components/tweetList';
+import UserCard from 'components/userCard';
 
 const UserPage: NextPage = () => {
   const router = useRouter();
@@ -27,6 +18,7 @@ const UserPage: NextPage = () => {
   const [open, setOpen] = useState(false);
   const [isFollow, setIsFollow] = useState(false);
   const [newUserName, setNewUserName] = useState('');
+  const [tweets, setTweets] = useState<Twitter.Tweet[]>([]);
 
   const displayUserId = router.query.userId;
 
@@ -46,10 +38,32 @@ const UserPage: NextPage = () => {
     }
   }, [displayUserId, router]);
 
+  const requestGetTweetList = useCallback(async () => {
+    if (typeof displayUserId !== 'string') return;
+    const tweets = await getUsersTweetList([displayUserId]);
+    const newTweetList: Twitter.Tweet[] = [];
+
+    tweets.map((tweets) => {
+      if (!user) return;
+      const tweet: Twitter.Tweet = {
+        id: tweets.id,
+        userId: tweets.userId,
+        userName: user?.name,
+        avatarUrl: user?.avatarUrl,
+        content: tweets.content,
+        createdAt: tweets.createdAt,
+      };
+      newTweetList.push(tweet);
+    });
+
+    setTweets(newTweetList);
+  }, [displayUserId, user]);
+
   useEffect(() => {
     requestGetUser();
     requestGetIsFollow();
-  }, [requestGetIsFollow, requestGetUser]);
+    requestGetTweetList();
+  }, [requestGetIsFollow, requestGetUser, requestGetTweetList]);
 
   const handleClickChangeUserNameButton = useCallback(() => {
     setNewUserName(user?.name || '');
@@ -79,62 +93,19 @@ const UserPage: NextPage = () => {
     router.push('/');
   }, [router]);
 
-  const handleClickFollowButton = useCallback(async () => {
-    if (loginUser && typeof displayUserId === 'string' && !isFollow) {
-      await addFollow({
-        followUserId: loginUser.id,
-        followerUserId: displayUserId,
-      });
-      setIsFollow(true);
-    }
-  }, [loginUser, displayUserId, isFollow]);
-
-  const handleClickFollowingButton = useCallback(async () => {
-    if (loginUser && typeof displayUserId === 'string' && isFollow) {
-      await deleteFollow(loginUser.id, displayUserId);
-      setIsFollow(false);
-    }
-  }, [displayUserId, isFollow, loginUser]);
-
   return (
     <>
       {user && (
         <>
-          <Stack direction="row">
-            <Avatar alt={user.name} src={user.avatarUrl} />
-            <Typography variant="h4" component="h1">
-              {user.name}
-            </Typography>
-          </Stack>
-          <Box>
-            {loginUser?.id === displayUserId && (
-              <Button variant="text" onClick={handleClickChangeUserNameButton}>
-                変更
-              </Button>
-            )}
-            {loginUser && loginUser?.id !== displayUserId ? (
-              isFollow ? (
-                <Button variant="outlined" onClick={handleClickFollowingButton}>
-                  フォロー中
-                </Button>
-              ) : (
-                <Button variant="contained" onClick={handleClickFollowButton}>
-                  フォローする
-                </Button>
-              )
-            ) : (
-              <></>
-            )}
-          </Box>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            divider={<Divider orientation="vertical" flexItem />}
-            spacing={2}
-          >
-            <Button variant="text">フォロー</Button>
-            <Button variant="text">フォロワー</Button>
-          </Stack>
+          <UserCard
+            user={user}
+            isFollow={isFollow}
+            setIsFollow={setIsFollow}
+            loginUserId={loginUser?.id}
+            onClickChangeUserNameButton={handleClickChangeUserNameButton}
+          />
+
+          <TweetList subheader="ツイート" tweets={tweets} />
           {loginUser?.id === displayUserId && (
             <Button variant="outlined" onClick={handleClickLogoutButton}>
               ログアウト

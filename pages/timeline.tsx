@@ -3,7 +3,7 @@ import React from 'react';
 import useTimelinePage from 'hooks/pages/useTimelinePage';
 import TweetDialog from 'components/tweetDialog';
 import TweetFab from 'components/tweetFab';
-import TweetList from 'components/tweetList/tweetList';
+import TweetList from 'components/tweetList';
 
 const TimelinePage: NextPage = () => {
   const {
@@ -17,7 +17,7 @@ const TimelinePage: NextPage = () => {
   } = useTimelinePage();
   return (
     <>
-      <TweetList tweets={tweetList} />
+      <TweetList subheader="タイムライン" tweets={tweetList} />
       <TweetFab handleClickFab={handleClickFab} />
       <TweetDialog
         open={open}

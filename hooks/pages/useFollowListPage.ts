@@ -16,7 +16,7 @@ const useFollowListPage = () => {
         const user = await getUser(follow.followerUserId);
         if (user) {
           const followUser: User = {
-            id: follow.id,
+            id: user.id,
             name: user.name,
             avatarUrl: user.avatarUrl,
             createdAt: follow.createdAt,

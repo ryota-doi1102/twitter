@@ -3,11 +3,12 @@ import NextLink from 'next/link';
 import React from 'react';
 
 type Props = {
+  subheader: string;
   tweets: Twitter.Tweet[];
 };
 
 const TweetList: React.FC<Props> = (props: Props) => (
-  <List subheader={<ListSubheader>タイムライン</ListSubheader>}>
+  <List subheader={<ListSubheader>{props.subheader}</ListSubheader>}>
     <Divider />
     {props.tweets.map((tweet) => (
       <React.Fragment key={tweet.id}>
